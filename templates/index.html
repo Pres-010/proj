@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kigali AI - Business Assistant</title>
+    <style>
+        :root {
+            --bg: #1a3a34;
+            --card: #0f2820;
+            --text: #f0f5f3;
+            --muted: #a0b0ad;
+            --accent: #ff9d5c;
+            --border: #2d5047;
+            --surface: #152d28;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            color: var(--text);
+            background: linear-gradient(135deg, #1a3a34 0%, #0d1f1c 100%);
+            min-height: 100vh;
+        }
+        button, input, select { font: inherit; cursor: pointer; }
+        .hidden { display: none !important; }
+        
+        /* Auth Pages */
+        .auth-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+        }
+        .auth-card h1 {
+            margin: 0 0 10px;
+            font-size: 24px;
+        }
+        .auth-card p {
+            margin: 0 0 24px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text);
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+        }
+        .form-group input::placeholder {
+            color: var(--muted);
+        }
+        .auth-actions {
+            display: grid;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-primary {
+            padding: 12px 16px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-secondary {
+            padding: 12px 16px;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .auth-footer {
+            margin-top: 16px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+        .auth-footer a {
+            color: var(--accent);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .error-message {
+            color: #ff6b6b;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+        }
+        .error-message.show { display: block; }
+
+        /* App Container */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar-main {
+            width: 340px;
+            background: linear-gradient(180deg, #1a3a34 0%, #0d1f1c 100%);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .new-chat-btn {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .new-chat-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .scrollbar-hide { -ms-overflow-style: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .conversation-item {
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 14px;
+            color: var(--text);
+        }
+        .conversation-item:hover {
+            background: rgba(255, 157, 92, 0.1);
+            border-color: var(--accent);
+        }
+        .conversation-item.active {
+            background: rgba(255, 157, 92, 0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 20px;
+            gap: 16px;
+        }
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 0 4px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user-msg {
+            align-self: flex-end;
+            background: var(--accent);
+            color: #fff;
+        }
+        .message.ai-msg {
+            align-self: flex-start;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        .message.loading {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+        .input-area {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            resize: none;
+            max-height: 100px;
+        }
+        .input-area input::placeholder {
+            color: var(--muted);
+        }
+        .input-area button {
+            padding: 14px 24px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .input-area button:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+        .input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Settings Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            max-width: 400px;
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        @media (max-width: 800px) {
+            .sidebar-main { width: 280px; }
+            .message { max-width: 90%; }
+        }
+        .btn-full-width { width: 100%; }
+        .btn-margin-top { margin-top: 10px; }
+        .header-info-muted { color: var(--muted); font-size: 13px; }
+        .header-plan { color: var(--muted); }
+        @media (max-width: 600px) {
+            .app-container { flex-direction: column; }
+            .sidebar-main { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid var(--border); }
+            .main-content { height: calc(100vh - 200px); }
+            .auth-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Pages -->
+    <div id="loginPage" class="auth-page">
+        <div class="auth-card">
+            <h1>Welcome to Kigali AI</h1>
+            <p>Your business assistant for entrepreneurs in Kigali, Rwanda.</p>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password">
+            </div>
+            <div class="auth-actions">
+                <button class="btn-primary" onclick="login()">Sign In</button>
+                <button class="btn-secondary" onclick="showRegisterPage()">Create Account</button>
+                <button class="btn-secondary" onclick="skipLogin()">Continue as Guest</button>
+            </div>
+            <div class="error-message" id="loginError"></div>
+            <p class="auth-footer">New to Kigali AI? <a onclick="showRegisterPage()">Sign up here</a></p>
+        </div>
+    </div>
+
+    <div id="registerPage" class="auth-page hidden">
+        <div class="auth-card">
+            <h1>Create Your Account</h1>
+            <p>Join Kigali AI and get personalized business guidance.</p>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="registerEmail" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="registerPassword" placeholder="Create a password">
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="registerConfirm" placeholder="Confirm your password">
+            </div>
+            <div class="form-group">
+                <label for="registerPlan">Starting Plan</label>
+                <select id="registerPlan" aria-label="Select starting plan">
+                    <option value="basic">Basic (Free)</option>
+                    <option value="pro">Pro</option>
+                    <option value="promax">Pro Max</option>
+                </select>
+            </div>
+            <div class="auth-actions">
+                <button class="btn-primary" onclick="register()">Create Account</button>
+                <button class="btn-secondary" onclick="skipLogin()">Continue as Guest</button>
+            </div>
+            <div class="error-message" id="registerError"></div>
+            <p class="auth-footer">Already have an account? <a onclick="showLoginPage()">Sign in</a></p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="appContainer" class="app-container hidden">
+        <!-- Sidebar -->
+        <div class="sidebar-main">
+            <div class="sidebar-header">
+                <div class="logo">📍 Kigali AI</div>
+                <button class="new-chat-btn" onclick="newConversation()">+ New Conversation</button>
+            </div>
+            <div class="conversations-list scrollbar-hide" id="conversationsList"></div>
+            <div class="sidebar-footer">
+                <button class="btn-secondary btn-full-width" onclick="showSettings()">⚙️ Settings</button>
+                <button class="btn-secondary btn-full-width" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-content">
+            <div class="chat-header">
+                <div>
+                    <h2 id="chatTitle">Kigali AI</h2>
+                    <small class="header-info-muted" id="userInfo">Guest Mode</small>
+                </div>
+                <small class="header-plan" id="planInfo">Basic Plan</small>
+            </div>
+
+            <div class="chat-area">
+                <div class="messages-container" id="messagesContainer"></div>
+                <div class="input-area">
+                    <input 
+                        type="text" 
+                        id="chatInput" 
+                        placeholder="Ask about markets, registration, or business growth in Kigali..." 
+                        onkeypress="if(event.key==='Enter' && !event.shiftKey) sendMessage()"
+                    />
+                    <button id="sendBtn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="auth-card">
+            <button class="close-btn" onclick="closeSettings()">×</button>
+            <h1>Settings</h1>
+            <div class="form-group">
+                <label for="languageSelect">Language</label>
+                <select id="languageSelect" aria-label="Select language" onchange="updateSetting('language', this.value)">
+                    <option value="English">English</option>
+                    <option value="French">Français</option>
+                    <option value="German">Deutsch</option>
+                    <option value="Kinyarwanda">Kinyarwanda</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="themeSelect">Theme</label>
+                <select id="themeSelect" aria-label="Select theme" onchange="changeTheme(this.value)">
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+            <button class="btn-primary btn-full-width btn-margin-top" onclick="closeSettings()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== STATE MANAGEMENT & CACHE =====
+        const state = {
+            conversations: [],
+            currentConversation: null,
+            isLoading: false,
+            messageQueue: [],
+            user: { email: 'Guest', plan: 'basic' }
+        };
+
+        // ===== API CALLS WITH CACHING & OPTIMIZATION =====
+        const API = {
+            cache: new Map(),
+            
+            _getCacheKey: (method, url) => `${method}:${url}`,
+            
+            register: async (email, password, confirmPassword, plan) => {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, confirm_password: confirmPassword, plan })
+                });
+                return res.json();
+            },
+            
+            login: async (email, password) => {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                return res.json();
+            },
+            
+            skip: async () => {
+                const res = await fetch('/api/auth/skip', { method: 'POST' });
+                return res.json();
+            },
+            
+            logout: async () => {
+                await fetch('/api/auth/logout', { method: 'POST' });
+            },
+            
+            checkSession: async () => {
+                const res = await fetch('/api/auth/session');
+                return res.json();
+            },
+            
+            chat: async (message) => {
+                state.isLoading = true;
+                try {
+                    const res = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+                    return res.json();
+                } finally {
+                    state.isLoading = false;
+                }
+            },
+            
+            getSettings: async () => {
+                const res = await fetch('/api/settings');
+                return res.json();
+            },
+            
+            updateSetting: async (key, value) => {
+                await fetch('/api/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key, value })
+                });
+            }
+        };
+
+        // ===== UI FUNCTIONS =====
+        function showLoginPage() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('registerPage').classList.add('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+        }
+
+        function showRegisterPage() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('registerPage').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+        }
+
+        function showApp(email = 'Guest', plan = 'basic') {
+            state.user = { email, plan };
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('registerPage').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            document.getElementById('userInfo').textContent = email;
+            document.getElementById('planInfo').textContent = plan.toUpperCase() + ' Plan';
+            document.getElementById('messagesContainer').innerHTML = '';
+            loadSettings();
+        }
+
+        async function skipLogin() {
+            const result = await API.skip();
+            if (result.success) {
+                showApp(result.email, result.plan);
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirm = document.getElementById('registerConfirm').value;
+            const plan = document.getElementById('registerPlan').value;
+            const errorDiv = document.getElementById('registerError');
+            
+            errorDiv.classList.remove('show');
+            if (!email || !password || !confirm) {
+                errorDiv.textContent = 'All fields required';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            const result = await API.register(email, password, confirm, plan);
+            if (result.error) {
+                errorDiv.textContent = result.error;
+                errorDiv.classList.add('show');
+            } else {
+                showApp(result.user.email, result.user.plan);
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            errorDiv.classList.remove('show');
+            if (!email || !password) {
+                errorDiv.textContent = 'Email and password required';
+                errorDiv.classList.add('show');
+                return;
+            }
+            
+            const result = await API.login(email, password);
+            if (result.error) {
+                errorDiv.textContent = result.error;
+                errorDiv.classList.add('show');
+            } else {
+                showApp(result.user.email, result.user.plan);
+            }
+        }
+
+        async function logout() {
+            await API.logout();
+            showLoginPage();
+            document.getElementById('messagesContainer').innerHTML = '';
+        }
+
+        // ===== CHAT FUNCTIONS =====
+        function newConversation() {
+            document.getElementById('messagesContainer').innerHTML = '';
+            document.getElementById('chatInput').focus();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message || state.isLoading) return;
+
+            // Add user message with animation
+            const messagesDiv = document.getElementById('messagesContainer');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user-msg';
+            userMsg.textContent = message;
+            messagesDiv.appendChild(userMsg);
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Show loading indicator
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = 'message loading';
+            loadingMsg.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            messagesDiv.appendChild(loadingMsg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Fetch response
+            const result = await API.chat(message);
+            loadingMsg.remove();
+
+            if (result.response) {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message ai-msg';
+                aiMsg.textContent = result.response;
+                messagesDiv.appendChild(aiMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        }
+
+        function showSettings() {
+            document.getElementById('settingsModal').classList.add('show');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        async function changeTheme(theme) {
+            // Theme change logic can be added here
+        }
+
+        async function updateSetting(key, value) {
+            await API.updateSetting(key, value);
+        }
+
+        async function loadSettings() {
+            const data = await API.getSettings();
+            const settings = data.settings || {};
+            document.getElementById('languageSelect').value = settings.language || 'English';
+            document.getElementById('themeSelect').value = settings.theme || 'dark';
+        }
+
+        // ===== INITIALIZATION =====
+        window.addEventListener('load', async () => {
+            const session = await API.checkSession();
+            if (session.authenticated) {
+                showApp(session.email, session.plan);
+            } else {
+                showLoginPage();
+            }
+        });
+    </script>
+</body>
+</html>

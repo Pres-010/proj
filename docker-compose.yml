@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  sisky_ai:
+    build: .
+    container_name: sisky_ai
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    volumes:
+      - ./database:/app/database
+    restart: "no"
