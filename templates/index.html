@@ -14,16 +14,35 @@
             --border: #2d5047;
             --surface: #152d28;
         }
+
+        /* Light theme overrides */
+        body.theme-light {
+            --bg: #f0f5f3;
+            --card: #ffffff;
+            --text: #1a3a34;
+            --muted: #5a7a74;
+            --accent: #e07040;
+            --border: #c8ddd9;
+            --surface: #e4efec;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
             color: var(--text);
-            background: linear-gradient(135deg, #1a3a34 0%, #0d1f1c 100%);
+            background: var(--bg);
             min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
         }
+
+        /* Dark mode keeps gradient, light drops it */
+        body:not(.theme-light) {
+            background: linear-gradient(135deg, #1a3a34 0%, #0d1f1c 100%);
+        }
+
         button, input, select { font: inherit; cursor: pointer; }
         .hidden { display: none !important; }
-        
+
         /* Auth Pages */
         .auth-page {
             display: flex;
@@ -40,18 +59,9 @@
             border-radius: 16px;
             padding: 40px;
         }
-        .auth-card h1 {
-            margin: 0 0 10px;
-            font-size: 24px;
-        }
-        .auth-card p {
-            margin: 0 0 24px;
-            color: var(--muted);
-            font-size: 14px;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
+        .auth-card h1 { margin: 0 0 10px; font-size: 24px; }
+        .auth-card p { margin: 0 0 24px; color: var(--muted); font-size: 14px; }
+        .form-group { margin-bottom: 16px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
@@ -67,14 +77,8 @@
             background: var(--surface);
             color: var(--text);
         }
-        .form-group input::placeholder {
-            color: var(--muted);
-        }
-        .auth-actions {
-            display: grid;
-            gap: 10px;
-            margin-top: 20px;
-        }
+        .form-group input::placeholder { color: var(--muted); }
+        .auth-actions { display: grid; gap: 10px; margin-top: 20px; }
         .btn-primary {
             padding: 12px 16px;
             background: var(--accent);
@@ -82,7 +86,6 @@
             border: none;
             border-radius: 8px;
             font-weight: 600;
-            cursor: pointer;
             transition: opacity 0.2s ease;
         }
         .btn-primary:hover { opacity: 0.9; }
@@ -93,65 +96,36 @@
             border: 1px solid var(--border);
             border-radius: 8px;
             font-weight: 600;
-            cursor: pointer;
             transition: background 0.2s ease;
         }
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .auth-footer {
-            margin-top: 16px;
-            color: var(--muted);
-            font-size: 14px;
-        }
-        .auth-footer a {
-            color: var(--accent);
-            text-decoration: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
+        .btn-secondary:hover { background: rgba(128,128,128,0.15); }
+        .auth-footer { margin-top: 16px; color: var(--muted); font-size: 14px; }
+        .auth-footer a { color: var(--accent); text-decoration: none; cursor: pointer; font-weight: 600; }
         .error-message {
             color: #ff6b6b;
             margin-top: 12px;
             padding: 12px;
-            background: rgba(255, 107, 107, 0.15);
-            border: 1px solid rgba(255, 107, 107, 0.3);
+            background: rgba(255,107,107,0.15);
+            border: 1px solid rgba(255,107,107,0.3);
             border-radius: 8px;
             font-size: 13px;
             display: none;
         }
         .error-message.show { display: block; }
 
-        /* App Container */
-        .app-container {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        /* Sidebar */
+        /* App */
+        .app-container { display: flex; height: 100vh; overflow: hidden; }
         .sidebar-main {
             width: 340px;
-            background: linear-gradient(180deg, #1a3a34 0%, #0d1f1c 100%);
+            background: var(--card);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: background 0.3s ease;
         }
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--accent);
-        }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 20px; font-weight: 700; color: var(--accent); }
         .new-chat-btn {
             width: 100%;
             padding: 14px 16px;
@@ -162,23 +136,13 @@
             font-weight: 600;
             transition: all 0.2s ease;
         }
-        .new-chat-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-        .conversations-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .new-chat-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .conversations-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
         .scrollbar-hide { -ms-overflow-style: none; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .conversation-item {
             padding: 12px 14px;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
             cursor: pointer;
@@ -189,106 +153,24 @@
             font-size: 14px;
             color: var(--text);
         }
-        .conversation-item:hover {
-            background: rgba(255, 157, 92, 0.1);
-            border-color: var(--accent);
-        }
-        .conversation-item.active {
-            background: rgba(255, 157, 92, 0.2);
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-        .sidebar-footer {
-            padding: 16px;
-            border-top: 1px solid var(--border);
-            flex-shrink: 0;
-            display: flex;
-            gap: 10px;
-            flex-direction: column;
-        }
-        
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .chat-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chat-header h2 {
-            margin: 0;
-            font-size: 18px;
-        }
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            padding: 20px;
-            gap: 16px;
-        }
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            padding: 0 4px;
-        }
-        .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 14px;
-            line-height: 1.5;
-            word-wrap: break-word;
-            animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .message.user-msg {
-            align-self: flex-end;
-            background: var(--accent);
-            color: #fff;
-        }
-        .message.ai-msg {
-            align-self: flex-start;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text);
-        }
-        .message.loading {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-            animation: typing 1.4s infinite;
-        }
+        .conversation-item:hover { background: rgba(255,157,92,0.1); border-color: var(--accent); }
+        .conversation-item.active { background: rgba(255,157,92,0.2); border-color: var(--accent); color: var(--accent); }
+        .sidebar-footer { padding: 16px; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 10px; flex-direction: column; }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); transition: background 0.3s ease; }
+        .chat-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .chat-header h2 { margin: 0; font-size: 18px; }
+        .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 20px; gap: 16px; }
+        .messages-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 0 4px; }
+        .message { max-width: 80%; padding: 12px 16px; border-radius: 14px; line-height: 1.5; word-wrap: break-word; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user-msg { align-self: flex-end; background: var(--accent); color: #fff; }
+        .message.ai-msg { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+        .message.loading { background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+        .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: typing 1.4s infinite; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing {
-            0%, 60%, 100% { opacity: 0.3; }
-            30% { opacity: 1; }
-        }
-        .input-area {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
+        @keyframes typing { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+        .input-area { display: flex; gap: 12px; align-items: flex-end; }
         .input-area input {
             flex: 1;
             padding: 14px 16px;
@@ -296,62 +178,16 @@
             border: 1px solid var(--border);
             background: var(--surface);
             color: var(--text);
-            resize: none;
-            max-height: 100px;
         }
-        .input-area input::placeholder {
-            color: var(--muted);
-        }
-        .input-area button {
-            padding: 14px 24px;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-        .input-area button:hover:not(:disabled) {
-            opacity: 0.9;
-        }
-        .input-area button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Settings Modal */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
+        .input-area input::placeholder { color: var(--muted); }
+        .input-area button { padding: 14px 24px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 600; transition: all 0.2s ease; }
+        .input-area button:hover:not(:disabled) { opacity: 0.9; }
+        .input-area button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal.show { display: flex; }
-        .modal-content {
-            max-width: 400px;
-            position: relative;
-        }
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--text);
-            cursor: pointer;
-        }
-
-        @media (max-width: 800px) {
-            .sidebar-main { width: 280px; }
-            .message { max-width: 90%; }
-        }
+        .modal-content { max-width: 400px; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; color: var(--text); cursor: pointer; }
+        @media (max-width: 800px) { .sidebar-main { width: 280px; } .message { max-width: 90%; } }
         .btn-full-width { width: 100%; }
         .btn-margin-top { margin-top: 10px; }
         .header-info-muted { color: var(--muted); font-size: 13px; }
@@ -406,7 +242,7 @@
             </div>
             <div class="form-group">
                 <label for="registerPlan">Starting Plan</label>
-                <select id="registerPlan" aria-label="Select starting plan">
+                <select id="registerPlan">
                     <option value="basic">Basic (Free)</option>
                     <option value="pro">Pro</option>
                     <option value="promax">Pro Max</option>
@@ -423,7 +259,6 @@
 
     <!-- Main App -->
     <div id="appContainer" class="app-container hidden">
-        <!-- Sidebar -->
         <div class="sidebar-main">
             <div class="sidebar-header">
                 <div class="logo">📍 Kigali AI</div>
@@ -436,7 +271,6 @@
             </div>
         </div>
 
-        <!-- Main Chat Area -->
         <div class="main-content">
             <div class="chat-header">
                 <div>
@@ -445,14 +279,13 @@
                 </div>
                 <small class="header-plan" id="planInfo">Basic Plan</small>
             </div>
-
             <div class="chat-area">
                 <div class="messages-container" id="messagesContainer"></div>
                 <div class="input-area">
-                    <input 
-                        type="text" 
-                        id="chatInput" 
-                        placeholder="Ask about markets, registration, or business growth in Kigali..." 
+                    <input
+                        type="text"
+                        id="chatInput"
+                        placeholder="Ask about markets, registration, or business growth in Kigali..."
                         onkeypress="if(event.key==='Enter' && !event.shiftKey) sendMessage()"
                     />
                     <button id="sendBtn" onclick="sendMessage()">Send</button>
@@ -468,7 +301,7 @@
             <h1>Settings</h1>
             <div class="form-group">
                 <label for="languageSelect">Language</label>
-                <select id="languageSelect" aria-label="Select language" onchange="updateSetting('language', this.value)">
+                <select id="languageSelect" onchange="updateSetting('language', this.value)">
                     <option value="English">English</option>
                     <option value="French">Français</option>
                     <option value="German">Deutsch</option>
@@ -477,9 +310,9 @@
             </div>
             <div class="form-group">
                 <label for="themeSelect">Theme</label>
-                <select id="themeSelect" aria-label="Select theme" onchange="changeTheme(this.value)">
-                    <option value="dark">Dark</option>
-                    <option value="light">Light</option>
+                <select id="themeSelect" onchange="applyTheme(this.value, true)">
+                    <option value="Dark">Dark</option>
+                    <option value="Light">Light</option>
                 </select>
             </div>
             <button class="btn-primary btn-full-width btn-margin-top" onclick="closeSettings()">Close</button>
@@ -487,21 +320,12 @@
     </div>
 
     <script>
-        // ===== STATE MANAGEMENT & CACHE =====
         const state = {
-            conversations: [],
-            currentConversation: null,
             isLoading: false,
-            messageQueue: [],
             user: { email: 'Guest', plan: 'basic' }
         };
 
-        // ===== API CALLS WITH CACHING & OPTIMIZATION =====
         const API = {
-            cache: new Map(),
-            
-            _getCacheKey: (method, url) => `${method}:${url}`,
-            
             register: async (email, password, confirmPassword, plan) => {
                 const res = await fetch('/api/auth/register', {
                     method: 'POST',
@@ -510,7 +334,6 @@
                 });
                 return res.json();
             },
-            
             login: async (email, password) => {
                 const res = await fetch('/api/auth/login', {
                     method: 'POST',
@@ -519,21 +342,17 @@
                 });
                 return res.json();
             },
-            
             skip: async () => {
                 const res = await fetch('/api/auth/skip', { method: 'POST' });
                 return res.json();
             },
-            
             logout: async () => {
                 await fetch('/api/auth/logout', { method: 'POST' });
             },
-            
             checkSession: async () => {
                 const res = await fetch('/api/auth/session');
                 return res.json();
             },
-            
             chat: async (message) => {
                 state.isLoading = true;
                 try {
@@ -547,12 +366,10 @@
                     state.isLoading = false;
                 }
             },
-            
             getSettings: async () => {
                 const res = await fetch('/api/settings');
                 return res.json();
             },
-            
             updateSetting: async (key, value) => {
                 await fetch('/api/settings', {
                     method: 'PUT',
@@ -562,7 +379,19 @@
             }
         };
 
-        // ===== UI FUNCTIONS =====
+        // ── Theme ──────────────────────────────────────────────────────────────
+        function applyTheme(theme, save = false) {
+            // theme values from DB are "Light" / "Dark" (capital first letter)
+            if (theme === 'Light') {
+                document.body.classList.add('theme-light');
+            } else {
+                document.body.classList.remove('theme-light');
+            }
+            document.getElementById('themeSelect').value = theme;
+            if (save) API.updateSetting('theme', theme);
+        }
+
+        // ── Page navigation ────────────────────────────────────────────────────
         function showLoginPage() {
             document.getElementById('loginPage').classList.remove('hidden');
             document.getElementById('registerPage').classList.add('hidden');
@@ -586,11 +415,18 @@
             loadSettings();
         }
 
+        async function loadSettings() {
+            const data = await API.getSettings();
+            const settings = data.settings || {};
+            document.getElementById('languageSelect').value = settings.language || 'English';
+            // Apply saved theme on load — no save since we're just restoring
+            applyTheme(settings.theme || 'Dark', false);
+        }
+
+        // ── Auth ───────────────────────────────────────────────────────────────
         async function skipLogin() {
             const result = await API.skip();
-            if (result.success) {
-                showApp(result.email, result.plan);
-            }
+            if (result.success) showApp(result.email, result.plan);
         }
 
         async function register() {
@@ -599,14 +435,12 @@
             const confirm = document.getElementById('registerConfirm').value;
             const plan = document.getElementById('registerPlan').value;
             const errorDiv = document.getElementById('registerError');
-            
             errorDiv.classList.remove('show');
             if (!email || !password || !confirm) {
                 errorDiv.textContent = 'All fields required';
                 errorDiv.classList.add('show');
                 return;
             }
-            
             const result = await API.register(email, password, confirm, plan);
             if (result.error) {
                 errorDiv.textContent = result.error;
@@ -620,14 +454,12 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
-            
             errorDiv.classList.remove('show');
             if (!email || !password) {
                 errorDiv.textContent = 'Email and password required';
                 errorDiv.classList.add('show');
                 return;
             }
-            
             const result = await API.login(email, password);
             if (result.error) {
                 errorDiv.textContent = result.error;
@@ -639,11 +471,12 @@
 
         async function logout() {
             await API.logout();
+            applyTheme('Dark', false); // reset theme on logout
             showLoginPage();
             document.getElementById('messagesContainer').innerHTML = '';
         }
 
-        // ===== CHAT FUNCTIONS =====
+        // ── Chat ───────────────────────────────────────────────────────────────
         function newConversation() {
             document.getElementById('messagesContainer').innerHTML = '';
             document.getElementById('chatInput').focus();
@@ -654,7 +487,6 @@
             const message = input.value.trim();
             if (!message || state.isLoading) return;
 
-            // Add user message with animation
             const messagesDiv = document.getElementById('messagesContainer');
             const userMsg = document.createElement('div');
             userMsg.className = 'message user-msg';
@@ -663,14 +495,12 @@
             input.value = '';
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-            // Show loading indicator
             const loadingMsg = document.createElement('div');
             loadingMsg.className = 'message loading';
             loadingMsg.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
             messagesDiv.appendChild(loadingMsg);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-            // Fetch response
             const result = await API.chat(message);
             loadingMsg.remove();
 
@@ -683,6 +513,7 @@
             }
         }
 
+        // ── Settings modal ─────────────────────────────────────────────────────
         function showSettings() {
             document.getElementById('settingsModal').classList.add('show');
         }
@@ -691,22 +522,11 @@
             document.getElementById('settingsModal').classList.remove('show');
         }
 
-        async function changeTheme(theme) {
-            // Theme change logic can be added here
-        }
-
         async function updateSetting(key, value) {
             await API.updateSetting(key, value);
         }
 
-        async function loadSettings() {
-            const data = await API.getSettings();
-            const settings = data.settings || {};
-            document.getElementById('languageSelect').value = settings.language || 'English';
-            document.getElementById('themeSelect').value = settings.theme || 'dark';
-        }
-
-        // ===== INITIALIZATION =====
+        // ── Init ───────────────────────────────────────────────────────────────
         window.addEventListener('load', async () => {
             const session = await API.checkSession();
             if (session.authenticated) {
