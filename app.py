@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session
 from flask_cors import CORS
-from functools import wraps, lru_cache
+from functools import wraps
 import secrets
 import time
 from database_setup import (
@@ -16,48 +16,39 @@ from database_setup import (
     clear_history,
     update_user_plan,
 )
-from main import Agent
+from main import Agent, SYSTEM_INSTRUCTION
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 CORS(app)
 
-# Performance optimizations
 app.config['JSON_SORT_KEYS'] = False
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 
-# Add performance headers
 @app.after_request
 def add_performance_headers(response):
-    """Add headers to improve performance"""
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    # Enable gzip compression in production
     response.headers['Vary'] = 'Accept-Encoding'
     return response
 
 initialize_database()
 
-# Simple response caching for settings
 _settings_cache = {}
-_cache_timeout = 300  # 5 minutes
+_cache_timeout = 300
 
 LANGUAGE_OPTIONS = ["English", "French", "German", "Kinyarwanda"]
 PLAN_OPTIONS = ["basic", "pro", "promax"]
 DEFAULT_SETTINGS = {
     "language": "English",
-    "theme": "Light",
+    "theme": "Dark",
     "use_google": "No",
 }
 
 agent = Agent(
     name="sisky_ai",
     model="gemini-2.5-flash",
-    instruction=(
-        "You are a helpful AI assistant for entrepreneurs in Kigali. "
-        "Use Google Search for current data when available. "
-        "You speak English, French, German, and Kinyarwanda."
-    ),
+    instruction=SYSTEM_INSTRUCTION,
     tools=["google_search"],
 )
 
@@ -72,22 +63,16 @@ def auth_required(f):
 
 
 def get_session_settings():
-    """Get settings with simple caching to reduce DB queries"""
     if "user_id" in session:
         user_id = session["user_id"]
         cache_key = f"settings_{user_id}"
-        
-        # Check cache first
         if cache_key in _settings_cache:
             cached_data, timestamp = _settings_cache[cache_key]
             if time.time() - timestamp < _cache_timeout:
                 return cached_data
-        
-        # Fetch from DB and cache
         settings = get_user_settings(user_id)
         _settings_cache[cache_key] = (settings, time.time())
         return settings
-    
     settings = session.get("settings", DEFAULT_SETTINGS.copy())
     for key, value in DEFAULT_SETTINGS.items():
         settings.setdefault(key, value)
@@ -95,10 +80,8 @@ def get_session_settings():
 
 
 def set_session_setting(key: str, value: str) -> None:
-    """Set setting and invalidate cache"""
     if "user_id" in session:
         set_user_setting(session["user_id"], key, value)
-        # Invalidate cache
         cache_key = f"settings_{session['user_id']}"
         if cache_key in _settings_cache:
             del _settings_cache[cache_key]
@@ -112,7 +95,7 @@ def append_session_history(role: str, message: str) -> None:
         append_history(session["user_id"], role, message)
         return
     history = session.get("history", [])
-    next_id = (session.get("history_counter", 0) + 1)
+    next_id = session.get("history_counter", 0) + 1
     session["history_counter"] = next_id
     history.append({"id": next_id, "role": role, "message": message, "created_at": ""})
     session["history"] = history
@@ -160,10 +143,8 @@ def api_register():
 
     if not email or not password:
         return jsonify({"error": "Email and password required"}), 400
-
     if password != confirm_password:
         return jsonify({"error": "Passwords do not match"}), 400
-
     if get_user_by_email(email):
         return jsonify({"error": "Account already exists"}), 400
 
@@ -235,16 +216,15 @@ def api_chat():
         return jsonify({"error": "Message cannot be empty"}), 400
 
     settings = get_session_settings()
+    history = get_session_history()
     try:
-        # Add message to history (async-like, but synchronous for now)
         append_session_history("user", prompt)
-        
-        # Get response from agent (faster model, lower tokens by default)
-        response = agent.respond(prompt, {**settings, "plan": session.get("plan", "basic")})
-        
-        # Add response to history
+        response = agent.respond(prompt, {
+            **settings,
+            "plan": session.get("plan", "basic"),
+            "history": history,
+        })
         append_session_history("assistant", response)
-        
         return jsonify({"response": response}), 200
     except Exception as e:
         return jsonify({"error": f"Error processing request: {str(e)}"}), 500
